@@ -68,4 +68,5 @@ while True:
         prev_time = time.time()
     # Display the output image
     cv2.imshow('Output Image', image)
-    cv2.waitKey(1)
+    if cv2.waitKey(1) & 0xFF == 27:
+        break
