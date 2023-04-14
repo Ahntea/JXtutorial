@@ -1,7 +1,10 @@
 import cv2
 import torch
+import numpy as np
 
 import matplotlib.pyplot as plt
+from image_patch_min import find_minsum_patch
+from image_patch_max import find_maxsum_patch
 
 # Set up camera capture
 cap = cv2.VideoCapture(0)
@@ -34,7 +37,6 @@ while True:
 
     with torch.no_grad():
         prediction = midas(input_batch)
-
         prediction = torch.nn.functional.interpolate(
             prediction.unsqueeze(1),
             size=img.shape[:2],
@@ -44,18 +46,15 @@ while True:
 
     # output = prediction.cpu().numpy().astype('uint8')
     output = prediction.cpu().numpy()
-    # plt.imshow(output)
-    # plt.show()
-    # output = cv2.applyColorMap(output, cv2.COLORMAP_JET)
-    # output = cv2.cvtColor(prediction.cpu().numpy().astype('uint8'), cv2.COLOR_GRAY2RGB)
-    output_color = cv2.applyColorMap(cv2.convertScaleAbs(output, alpha=255/output.max()), cv2.COLORMAP_JET)
+    output_color = cv2.applyColorMap(cv2.convertScaleAbs(output, alpha=255/output.max()), cv2.COLORMAP_MAGMA)
 
-    # Display the output image using OpenCV's imshow function
+    center_x, center_y = find_minsum_patch(output,40)
+    # center_x, center_y = find_maxsum_patch(output,40)
+    cv2.circle(output_color,center=(center_x,center_y), radius=10, thickness=5, color=(255,255,255))
+    
     cv2.imshow("Output", output_color)
-
-    # Display depth map
-    # cv2.imshow('depth',output)
-    cv2.imshow('Original',frame)
+    # cv2.imshow("Output", output_jet)
+    # cv2.imshow('Original',frame)
 
     # Exit loop on 'q' key press
     if cv2.waitKey(1) & 0xFF == 27:
